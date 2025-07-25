@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <title>短縮URLメーカー</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 2em;
+      background: #f9f9f9;
+    }
+    input[type="text"] {
+      width: 80%;
+      padding: 8px;
+      margin-bottom: 10px;
+    }
+    button {
+      padding: 8px 16px;
+      margin-left: 8px;
+    }
+    .link-list {
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <h1>🔗 短縮URLメーカー（ローカル）</h1>
+  <input type="text" id="longUrl" placeholder="ここに長いURLを貼ってください" />
+  <button onclick="shortenUrl()">短縮する</button>
+
+  <div class="link-list" id="linkList"></div>
+
+  <script>
+    const storageKey = 'shortUrls';
+
+    function getStoredLinks() {
+      return JSON.parse(localStorage.getItem(storageKey) || '{}');
+    }
+
+    function saveLink(code, original) {
+      const links = getStoredLinks();
+      links[code] = original;
+      localStorage.setItem(storageKey, JSON.stringify(links));
+    }
+
+    function generateCode(length = 6) {
+      const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+      return Array.from({ length }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+    }
+
+    function shortenUrl() {
+      const longUrl = document.getElementById('longUrl').value.trim();
+      if (!longUrl) {
+        alert('URLを入力してください');
+        return;
+      }
+
+      const code = generateCode();
+      saveLink(code, longUrl);
+      displayLinks();
+    }
+
+    function displayLinks() {
+      const container = document.getElementById('linkList');
+      const links = getStoredLinks();
+      container.innerHTML = '<h3>🎉 作成済みリンク</h3>';
+      for (const code in links) {
+        const short = `${location.origin}${location.pathname}?s=${code}`;
+        container.innerHTML += `
+          <p><a href="${short}" target="_blank">${short}</a> → ${links[code]}</p>
+        `;
+      }
+    }
+
+    function redirectIfNeeded() {
+      const params = new URLSearchParams(window.location.search);
+      const shortCode = params.get('s');
+      if (shortCode) {
+        const links = getStoredLinks();
+        if (links[shortCode]) {
+          window.location.href = links[shortCode];
+        } else {
+          document.body.innerHTML = '<h2>😢 このリンクは存在しません</h2>';
+        }
+      }
+    }
+
+    redirectIfNeeded();
+    displayLinks();
+  </script>
+</body>
+</html>
