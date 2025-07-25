@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <title>リダイレクト中...</title>
+</head>
+<body>
+  <p>リダイレクト中です...</p>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const code = window.location.pathname.split('/').pop();
+
+    const urlMap = {
+      "s1": "https://example.com/page1",
+      "s2": "https://example.com/page2"
+      // 必要に応じてマッピングを追加
+    };
+
+    if (urlMap[code]) {
+      window.location.href = urlMap[code];
+    } else {
+      document.body.innerHTML = "<h1>リンクが見つかりませんでした</h1>";
+    }
+  </script>
+</body>
+</html>
