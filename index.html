@@ -4,82 +4,139 @@
   <meta charset="UTF-8">
   <title>短縮URLメーカー</title>
   <style>
-    body { font-family: Arial, sans-serif; margin: 20px; }
-    h1 { color: #333; }
+    body {
+      font-family: Arial, sans-serif;
+      margin: 30px;
+    }
+    h1 {
+      display: flex;
+      align-items: center;
+      font-size: 24px;
+    }
+    h1::before {
+      content: "🔗";
+      margin-right: 8px;
+    }
     input {
       width: 70%;
-      padding: 8px;
+      padding: 10px;
+      margin-right: 10px;
       font-size: 16px;
     }
     button {
-      padding: 8px 12px;
-      font-size: 14px;
-      margin-left: 5px;
-      cursor: pointer;
+      padding: 10px 15px;
+      font-size: 16px;
       border: none;
-      border-radius: 4px;
+      border-radius: 5px;
+      cursor: pointer;
     }
     .shorten-btn {
-      background: #28a745;
+      background-color: #28a745; /* 緑色 */
       color: white;
     }
     .shorten-btn:hover {
-      background: #218838;
+      background-color: #218838;
     }
     .copy-btn {
-      margin-left: 10px;
-      padding: 4px 8px;
-      background: #007bff;
+      background-color: #28a745; /* 緑色 */
       color: white;
-      border: none;
-      border-radius: 4px;
+      padding: 5px 10px;
+      margin-left: 8px;
+      border-radius: 5px;
+      font-size: 14px;
       cursor: pointer;
     }
     .copy-btn:hover {
-      background: #0056b3;
+      background-color: #218838;
     }
     .link-item {
-      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      margin-top: 10px;
+    }
+    .link-item a {
+      color: #0066cc;
+      text-decoration: none;
+      word-break: break-all;
+    }
+    .link-item span {
+      margin-right: 5px;
+      word-break: break-all;
+    }
+    #result {
+      margin-top: 20px;
     }
   </style>
 </head>
 <body>
-  <h1>🔗 短縮URLメーカー</h1>
+  <h1>短縮URLメーカー</h1>
+  <input type="text" id="longUrl" placeholder="ここに長いURLを貼ってください">
+  <button class="shorten-btn" onclick="shortenUrl()">短縮する</button>
 
-  <input type="text" id="urlInput" placeholder="ここに長いURLを貼ってください">
-  <button class="shorten-btn" onclick="shortenURL()">短縮する</button>
-
-  <h2>🎉 作成済みリンク</h2>
-  <div id="linkList"></div>
+  <div id="result">
+    <h2>🎉 作成済みリンク</h2>
+  </div>
 
   <script>
-    function shortenURL() {
-      const input = document.getElementById("urlInput").value;
-      if (!input) {
+    function generateRandomString(length) {
+      const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+      let result = "";
+      for (let i = 0; i < length; i++) {
+        result += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      return result;
+    }
+
+    function shortenUrl() {
+      const longUrl = document.getElementById("longUrl").value.trim();
+      if (!longUrl) {
         alert("URLを入力してください");
         return;
       }
 
-      // ランダムな短縮キー作成
-      const shortKey = Math.random().toString(36).substr(2, 6);
-      const shortURL = `https://short.msakai.co/?s=${shortKey}`;
+      const randomString = generateRandomString(6);
+      const shortUrl = `https://short.msakai.co/?s=${randomString}`;
 
-      // 作成したリンクをHTMLに追加
-      const linkList = document.getElementById("linkList");
-      const div = document.createElement("div");
-      div.className = "link-item";
-      div.innerHTML = `
-        <a href="${shortURL}" target="_blank">${shortURL}</a> → ${input}
-        <button class="copy-btn" onclick="copyToClipboard('${shortURL}')">コピー</button>
-      `;
-      linkList.appendChild(div);
+      addShortenedLink(shortUrl, longUrl);
+      document.getElementById("longUrl").value = "";
     }
 
-    function copyToClipboard(text) {
+    function addShortenedLink(shortUrl, originalUrl) {
+      const resultDiv = document.getElementById("result");
+
+      const linkItem = document.createElement("div");
+      linkItem.className = "link-item";
+
+      const shortLink = document.createElement("a");
+      shortLink.href = shortUrl;
+      shortLink.innerText = shortUrl;
+      shortLink.target = "_blank";
+
+      const arrow = document.createElement("span");
+      arrow.innerText = " → ";
+
+      const longLink = document.createElement("span");
+      longLink.innerText = originalUrl;
+
+      const copyBtn = document.createElement("button");
+      copyBtn.className = "copy-btn";
+      copyBtn.innerText = "コピー";
+      copyBtn.onclick = () => copyToClipboard(shortUrl, copyBtn);
+
+      linkItem.appendChild(shortLink);
+      linkItem.appendChild(arrow);
+      linkItem.appendChild(longLink);
+      linkItem.appendChild(copyBtn);
+
+      resultDiv.appendChild(linkItem);
+    }
+
+    function copyToClipboard(text, btn) {
       navigator.clipboard.writeText(text).then(() => {
-        alert("✅ コピーしました: " + text);
+        btn.innerText = "✅ コピー済み";
+        setTimeout(() => btn.innerText = "コピー", 1500);
       }).catch(err => {
-        alert("コピーに失敗しました: " + err);
+        alert("コピーに失敗しました");
       });
     }
   </script>
